@@ -1,0 +1,169 @@
+{
+  "id": "8ac3fc08-c43b-4e7c-9370-91464ded53e7",
+  "name": "我的知识城邦",
+  "founded_at": "2026-03-16T18:05:37.462667",
+  "buildings": {},
+  "districts": {
+    "d25840c1-4e63-4bbd-8654-dc44aa5b4833": {
+      "id": "d25840c1-4e63-4bbd-8654-dc44aa5b4833",
+      "name": "学习区",
+      "description": "学习相关的知识",
+      "unlocked": true,
+      "created_at": "2026-03-16T18:05:37.462821"
+    },
+    "f9e28ac5-0a38-4793-a585-1774cfaefbe1": {
+      "id": "f9e28ac5-0a38-4793-a585-1774cfaefbe1",
+      "name": "工作区",
+      "description": "工作相关的技能",
+      "unlocked": true,
+      "created_at": "2026-03-16T18:05:37.462839"
+    },
+    "c6cda217-33e2-4651-a52e-37377e852e59": {
+      "id": "c6cda217-33e2-4651-a52e-37377e852e59",
+      "name": "生活区",
+      "description": "生活中的点滴",
+      "unlocked": true,
+      "created_at": "2026-03-16T18:05:37.462850"
+    },
+    "1b4e757b-5078-4109-9e94-7eab84de0cf4": {
+      "id": "1b4e757b-5078-4109-9e94-7eab84de0cf4",
+      "name": "创意区",
+      "description": "灵感与创意",
+      "unlocked": true,
+      "created_at": "2026-03-16T18:05:37.462859"
+    }
+  },
+  "resources": {
+    "wisdom_coin": 0,
+    "inspiration": 0,
+    "scroll": 0,
+    "visitor": 0
+  },
+  "achievements": {
+    "achievements": [
+      {
+        "id": "first_building",
+        "name": "初来乍到",
+        "description": "添加第一条知识",
+        "tier": "primary",
+        "emoji": "🌱",
+        "reward": {
+          "wisdom_coin": 50,
+          "inspiration": 0,
+          "scroll": 0
+        },
+        "unlocked": false,
+        "unlocked_at": null
+      },
+      {
+        "id": "ten_buildings",
+        "name": "小有规模",
+        "description": "添加10条知识",
+        "tier": "primary",
+        "emoji": "🏘️",
+        "reward": {
+          "wisdom_coin": 100,
+          "inspiration": 20,
+          "scroll": 0
+        },
+        "unlocked": false,
+        "unlocked_at": null
+      },
+      {
+        "id": "ten_links",
+        "name": "四通八达",
+        "description": "建立10条关联",
+        "tier": "intermediate",
+        "emoji": "🛤️",
+        "reward": {
+          "wisdom_coin": 0,
+          "inspiration": 50,
+          "scroll": 1
+        },
+        "unlocked": false,
+        "unlocked_at": null
+      },
+      {
+        "id": "district_specialist",
+        "name": "区域专精",
+        "description": "某个分类满20条",
+        "tier": "intermediate",
+        "emoji": "🎯",
+        "reward": {
+          "wisdom_coin": 200,
+          "inspiration": 50,
+          "scroll": 0
+        },
+        "unlocked": false,
+        "unlocked_at": null
+      },
+      {
+        "id": "hundred_buildings",
+        "name": "知识帝国",
+        "description": "添加100条知识",
+        "tier": "advanced",
+        "emoji": "🏰",
+        "reward": {
+          "wisdom_coin": 500,
+          "inspiration": 200,
+          "scroll": 3
+        },
+        "unlocked": false,
+        "unlocked_at": null
+      },
+      {
+        "id": "five_districts",
+        "name": "智慧之城",
+        "description": "解锁5个区域",
+        "tier": "advanced",
+        "emoji": "🌆",
+        "reward": {
+          "wisdom_coin": 0,
+          "inspiration": 300,
+          "scroll": 5
+        },
+        "unlocked": false,
+        "unlocked_at": null
+      },
+      {
+        "id": "five_hundred_buildings",
+        "name": "活的百科",
+        "description": "添加500条知识",
+        "tier": "legendary",
+        "emoji": "📚",
+        "reward": {
+          "wisdom_coin": 2000,
+          "inspiration": 1000,
+          "scroll": 10
+        },
+        "unlocked": false,
+        "unlocked_at": null
+      },
+      {
+        "id": "hundred_links",
+        "name": "知识互联",
+        "description": "建立100条关联",
+        "tier": "legendary",
+        "emoji": "🕸️",
+        "reward": {
+          "wisdom_coin": 1500,
+          "inspiration": 800,
+          "scroll": 8
+        },
+        "unlocked": false,
+        "unlocked_at": null
+      }
+    ]
+  },
+  "stats": {
+    "total_buildings": 0,
+    "total_links": 0,
+    "total_districts": 0,
+    "max_buildings_in_district": 0,
+    "total_maintains": 0,
+    "days_active": 1,
+    "total_output": 0
+  },
+  "last_login": "2026-03-16T18:05:37.462784",
+  "daily_login_streak": 1
+}
