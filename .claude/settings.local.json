@@ -4,7 +4,9 @@
       "Bash(mv:*)",
       "Bash(python:*)",
       "Bash(npx skills:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(pip install:*)",
+      "WebSearch"
     ]
   }
 }
