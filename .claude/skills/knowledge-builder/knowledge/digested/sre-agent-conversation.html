@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>完整对话记录 - 基于AI大模型的故障诊断与根因分析落地实现</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #fafafa;
+            color: #333;
+            line-height: 1.8;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 280px;
+            background: #fff;
+            border-right: 1px solid #eee;
+            border-radius: 0 12px 12px 0;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .sidebar-icon {
+            width: 100%;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            border-radius: 0 12px 0 0;
+        }
+
+        .sidebar-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .sidebar-content {
+            padding: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .sidebar-progress {
+            margin-bottom: 25px;
+        }
+
+        .sidebar-progress-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-progress-track {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-progress-fill {
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar-progress-text {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .sidebar-nav-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            margin-top: 20px;
+        }
+
+        .sidebar-nav-list {
+            list-style: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .sidebar-nav-item {
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .sidebar-nav-item:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar-nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .sidebar-nav-header:hover {
+            color: #4CAF50;
+        }
+
+        .sidebar-nav-header .stage-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .sidebar-nav-header:hover .stage-info {
+            color: #4CAF50;
+        }
+
+        .sidebar-nav-header .count {
+            font-size: 11px;
+            color: #999;
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 8px;
+        }
+
+        .sidebar-nav-arrow {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav-arrow.expanded {
+            transform: rotate(90deg);
+        }
+
+        .sidebar-nav-questions {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding-left: 24px;
+        }
+
+        .sidebar-nav-questions.expanded {
+            max-height: 1000px;
+        }
+
+        .sidebar-question-item {
+            padding: 6px 0;
+            font-size: 12px;
+        }
+
+        .sidebar-question-item a {
+            color: #999;
+            text-decoration: none;
+            display: block;
+            transition: color 0.2s;
+            line-height: 1.4;
+        }
+
+        .sidebar-question-item a:hover {
+            color: #4CAF50;
+        }
+
+        .sidebar-question-item a.mastered {
+            color: #4CAF50;
+            font-weight: 500;
+        }
+
+        .sidebar-question-item a.mastered .q-number {
+            color: #4CAF50;
+        }
+
+        .sidebar-question-item .q-number {
+            color: #bbb;
+            margin-right: 4px;
+        }
+
+        .sidebar-question-item .mastered-icon {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid #eee;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
+
+        .meta {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .meta-item {
+            background: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #eee;
+        }
+
+        .tags {
+            margin-top: 20px;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            color: #666;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin: 4px;
+        }
+
+        .section {
+            background: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #eee;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .qa-block {
+            margin-bottom: 40px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .qa-block:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .question {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 3px solid #333;
+            position: relative;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .question-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .question-text {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .master-btn {
+            background: none;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            margin-left: 15px;
+        }
+
+        .master-btn:hover {
+            border-color: #4CAF50;
+            background: #f0fff4;
+        }
+
+        .master-btn.mastered {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+
+        .master-btn.mastered svg {
+            fill: white;
+            stroke: white;
+        }
+
+        .master-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: #999;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .master-btn:not(.mastered) svg {
+            stroke: #ccc;
+        }
+
+        .master-btn:hover:not(.mastered) svg {
+            stroke: #4CAF50;
+        }
+
+        .answer {
+            padding-left: 20px;
+        }
+
+        .answer-label {
+            font-size: 12px;
+            color: #0066cc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .answer-content {
+            color: #444;
+        }
+
+        .answer-content p {
+            margin-bottom: 15px;
+        }
+
+        .answer-content ul,
+        .answer-content ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .answer-content li {
+            margin-bottom: 8px;
+        }
+
+        .answer-content strong {
+            color: #1a1a1a;
+        }
+
+        .answer-content h3,
+        .answer-content h4 {
+            margin: 20px 0 10px 0;
+            color: #333;
+        }
+
+        .answer-content code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .feedback {
+            background: #f0f7ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 3px solid #0066cc;
+        }
+
+        .feedback-label {
+            font-size: 12px;
+            color: #0066cc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .stage-complete {
+            text-align: center;
+            padding: 20px;
+            background: #f0fff4;
+            border-radius: 8px;
+            color: #22863a;
+            font-weight: 500;
+            margin-top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 60px;
+            color: #dc3545;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #999;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            .section {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .meta {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .question-header {
+                flex-direction: column;
+            }
+
+            .master-btn {
+                margin-left: 0;
+                margin-top: 15px;
+                align-self: flex-end;
+            }
+
+            .sidebar {
+                width: 240px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+            </svg>
+        </div>
+        <div class="sidebar-content">
+            <div class="sidebar-title">学习进度</div>
+            <div class="sidebar-progress">
+                <div class="sidebar-progress-label">掌握情况</div>
+                <div class="sidebar-progress-track">
+                    <div class="sidebar-progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="sidebar-progress-text">已掌握 0/21 个问题 (0%)</div>
+            </div>
+            <div class="sidebar-nav-title">训练计划</div>
+            <ul class="sidebar-nav-list" id="sidebar-nav"></ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="app">
+            <div class="loading">正在加载数据...</div>
+        </div>
+    </div>
+
+    <script>
+        const JSON_PATH = './sre-agent-conversation.json';
+        const STORAGE_KEY = 'sre-agent-mastered-questions';
+
+        function getMasteredQuestions() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            return stored ? JSON.parse(stored) : {};
+        }
+
+        function saveMasteredQuestions(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function toggleMaster(questionId) {
+            const mastered = getMasteredQuestions();
+            mastered[questionId] = !mastered[questionId];
+            saveMasteredQuestions(mastered);
+
+            const btn = document.querySelector(`[data-question-id="${questionId}"]`);
+            if (btn) {
+                btn.classList.toggle('mastered', mastered[questionId]);
+            }
+
+            const sidebarLink = document.querySelector(`[data-sidebar-q="${questionId}"]`);
+            if (sidebarLink) {
+                if (mastered[questionId]) {
+                    sidebarLink.classList.add('mastered');
+                    if (!sidebarLink.querySelector('.mastered-icon')) {
+                        const icon = document.createElement('svg');
+                        icon.className = 'mastered-icon';
+                        icon.setAttribute('viewBox', '0 0 24 24');
+                        icon.setAttribute('fill', 'none');
+                        icon.setAttribute('stroke', '#4CAF50');
+                        icon.setAttribute('stroke-width', '3');
+                        icon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+                        sidebarLink.appendChild(icon);
+                    }
+                } else {
+                    sidebarLink.classList.remove('mastered');
+                    const icon = sidebarLink.querySelector('.mastered-icon');
+                    if (icon) {
+                        icon.remove();
+                    }
+                }
+            }
+
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const mastered = getMasteredQuestions();
+            const masteredCount = Object.values(mastered).filter(v => v).length;
+            const totalQuestions = 21;
+            const percentage = Math.round((masteredCount / totalQuestions) * 100);
+
+            const progressFill = document.querySelector('.sidebar-progress-fill');
+            const progressText = document.querySelector('.sidebar-progress-text');
+
+            if (progressFill) {
+                progressFill.style.width = `${percentage}%`;
+            }
+            if (progressText) {
+                progressText.textContent = `已掌握 ${masteredCount}/${totalQuestions} 个问题 (${percentage}%)`;
+            }
+        }
+
+        function parseMarkdown(text) {
+            if (!text) return '';
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/### (.*?)(\n|$)/g, '<h3>$1</h3>')
+                .replace(/## (.*?)(\n|$)/g, '<h4>$1</h4>')
+                .replace(/- (.*?)(\n|$)/g, '<li>$1</li>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function renderHeader(data) {
+            const meta = data.meta;
+            return `
+                <header>
+                    <h1>${meta.title.split(' - ')[0]}</h1>
+                    <p style="color: #666; margin-bottom: 20px;">${meta.title.split(' - ')[1] || ''}</p>
+                    <div class="meta">
+                        <span class="meta-item">类型：${meta.type}</span>
+                        <span class="meta-item">来源：${meta.source}</span>
+                        <span class="meta-item">训练阶段：${meta.totalStages}个阶段，${meta.totalQuestions}个问题</span>
+                    </div>
+                    <div class="tags">
+                        ${meta.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                    </div>
+                </header>
+            `;
+        }
+
+        function renderSidebarNav(data) {
+            const stages = data.stages;
+            const mastered = getMasteredQuestions();
+            const navList = document.getElementById('sidebar-nav');
+            if (navList) {
+                navList.innerHTML = stages.map(stage => `
+                    <li class="sidebar-nav-item">
+                        <div class="sidebar-nav-header" onclick="toggleStage(${stage.id})">
+                            <svg class="sidebar-nav-arrow" id="arrow-${stage.id}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                            <div class="stage-info">
+                                <span>阶段${stage.id}：${stage.title}</span>
+                                <span class="count">${stage.questions.length}</span>
+                            </div>
+                        </div>
+                        <div class="sidebar-nav-questions" id="questions-${stage.id}">
+                            ${stage.questions.map(q => {
+                    const isMastered = mastered[q.id] || false;
+                    return `
+                                <div class="sidebar-question-item">
+                                    <a href="#q-${q.id}" class="${isMastered ? 'mastered' : ''}" data-sidebar-q="${q.id}">
+                                        <span class="q-number">${q.number}</span>${q.question.length > 30 ? q.question.substring(0, 30) + '...' : q.question}
+                                        ${isMastered ? '<svg class="mastered-icon" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+                                    </a>
+                                </div>
+                            `}).join('')}
+                        </div>
+                    </li>
+                `).join('');
+            }
+        }
+
+        function toggleStage(stageId) {
+            const arrow = document.getElementById(`arrow-${stageId}`);
+            const questions = document.getElementById(`questions-${stageId}`);
+
+            if (arrow && questions) {
+                arrow.classList.toggle('expanded');
+                questions.classList.toggle('expanded');
+            }
+        }
+
+        function renderQA(question) {
+            const mastered = getMasteredQuestions();
+            const isMastered = mastered[question.id] || false;
+
+            return `
+                <div class="qa-block" id="q-${question.id}">
+                    <div class="question">
+                        <div class="question-header">
+                            <div>
+                                <div class="question-label">问题 ${question.number}</div>
+                                <div class="question-text">${question.question}</div>
+                            </div>
+                            <button class="master-btn ${isMastered ? 'mastered' : ''}" 
+                                    data-question-id="${question.id}" 
+                                    onclick="toggleMaster(${question.id})"
+                                    title="${isMastered ? '点击取消掌握' : '点击标记为已掌握'}">
+                                <svg viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="answer">
+                        <div class="answer-label">用户回答</div>
+                        <div class="answer-content">
+                            <p>${parseMarkdown(question.answer)}</p>
+                        </div>
+                    </div>
+                    ${question.feedback ? `
+                        <div class="feedback">
+                            <div class="feedback-label">AI反馈</div>
+                            <p>${parseMarkdown(question.feedback)}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function renderStage(stage, isLast) {
+            return `
+                <section class="section" id="stage${stage.id}">
+                    <h2 class="section-title">${stage.title}</h2>
+                    ${stage.questions.map(q => renderQA(q)).join('')}
+                    ${!isLast ? '<div class="stage-complete">阶段' + stage.id + '完成！继续下一阶段的学习。</div>' : ''}
+                </section>
+            `;
+        }
+
+        function renderFooter(data) {
+            return `
+                <footer>
+                    <p>一问一答完整存档，无遗漏</p>
+                    <p style="margin-top: 10px;">完成时间：${data.meta.endTime}</p>
+                </footer>
+            `;
+        }
+
+        async function loadAndRender() {
+            const app = document.getElementById('app');
+
+            try {
+                const response = await fetch(JSON_PATH);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                let html = renderHeader(data);
+
+                data.stages.forEach((stage, index) => {
+                    html += renderStage(stage, index === data.stages.length - 1);
+                });
+
+                html += renderFooter(data);
+
+                app.innerHTML = html;
+
+                renderSidebarNav(data);
+                updateProgress();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                app.innerHTML = `
+                    <div class="error">
+                        <p>加载数据失败：${error.message}</p>
+                        <p style="margin-top: 20px;">请确保 JSON 文件路径正确，或使用本地服务器打开此页面。</p>
+                        <p style="margin-top: 10px; font-size: 12px; color: #999;">提示：由于浏览器安全限制，直接打开 HTML 文件可能无法加载本地 JSON。请使用以下命令启动本地服务器：</p>
+                        <p style="margin-top: 10px; font-family: monospace; background: #f5f5f5; padding: 10px; border-radius: 4px;">python3 -m http.server 8000</p>
+                        <p style="margin-top: 10px; font-size: 12px; color: #999;">然后在浏览器中访问 http://localhost:8000</p>
+                    </div>
+                `;
+            }
+        }
+
+        loadAndRender();
+    </script>
+</body>
+
+</html>
