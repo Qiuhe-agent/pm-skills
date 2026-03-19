@@ -6,7 +6,8 @@
       "Bash(npx skills:*)",
       "Bash(rm:*)",
       "Bash(pip install:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(mkdir:*)"
     ]
   }
 }

@@ -26,6 +26,11 @@
       "sourceType": "github",
       "computedHash": "b051b45c234c59f97e0e1d365a81cae46adcb75baa95260299f617d80c1cb378"
     },
+    "skill-creator": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "57f470f512f45bdac598e302bc72fd62bf2b649fc7fad032efe97720149cde4d"
+    },
     "write-a-prd": {
       "source": "mattpocock/skills",
       "sourceType": "github",

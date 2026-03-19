@@ -1,0 +1,29 @@
+{
+  "skill_name": "knowledge-builder",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我今天学了怎么用 React 的 useState hook，想记下来。主要学了怎么声明状态，还有如何更新状态。比如一个计数器的例子。",
+      "expected_output": "创建一个关于 React useState hook 的学习笔记 Markdown 文件，包含标题、类型、标签、创建时间、概述、详情、关键点等部分",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我有个想法，想做一个能帮人整理读书笔记的工具。这个工具应该能自动提取书中的关键点，还能生成思维导图。",
+      "expected_output": "创建一个想法灵感类型的 Markdown 文件，记录这个工具创意，包含灵感来源、核心想法、可能的应用场景等",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "刚才解决了一个 bug，花了我两个小时。问题是数据库查询太慢了，后来发现是没加索引。加上索引之后快了10倍！想把这个经验记下来。",
+      "expected_output": "创建一个个人经验类型的 Markdown 文件，记录这次解决数据库性能问题的经验，包含背景、做了什么、学到了什么等",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "这是一份关于 React Hooks 的文档，帮我消化一下。文件在 .claude/skills/knowledge-builder/evals/sample-nourishment.md",
+      "expected_output": "进入养料消化模式，读取文档，设计训练计划，通过问答引导用户理解内容，最终生成基于用户回答的消化知识笔记",
+      "files": [".claude/skills/knowledge-builder/evals/sample-nourishment.md"]
+    }
+  ]
+}

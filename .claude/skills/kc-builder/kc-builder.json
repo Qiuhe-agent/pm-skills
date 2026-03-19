@@ -1,0 +1,92 @@
+{
+  "version": "1.0",
+  "city_name": "Agent",
+  "theme": "科幻未来",
+  "created_at": "2026-03-19T00:00:00.000Z",
+  "updated_at": "2026-03-19T00:00:00.000Z",
+  "districts": [
+    {
+      "id": "district-code-nexus",
+      "name": "代码枢纽区",
+      "description": "代码与数据汇聚的高科技中心，这里是编程语言和框架知识的能量核心所在",
+      "color": "#3B82F6",
+      "buildings": [
+        {
+          "id": "building-python-core",
+          "name": "蟒蛇数据核心",
+          "style": "赛博朋克能量核心",
+          "description": "一个悬浮的球形能量核心，内部流动着 Python 字节码，存储着 Python 语言的基础知识",
+          "file_path": ".claude/skills/kc-builder/knowledge/python-basics.md",
+          "created_at": "2026-03-19T00:00:00.000Z",
+          "updated_at": "2026-03-19T00:00:00.000Z",
+          "preview": "Python 是动态类型语言，不需要声明变量类型。列表是有序的可变序列。"
+        },
+        {
+          "id": "building-react-tower",
+          "name": "组件合成塔",
+          "style": "模块化未来建筑",
+          "description": "由无数可互换组件构成的高塔，每个组件都能独立运行又能无缝组合，代表着 React 的组件化思想",
+          "file_path": ".claude/skills/kc-builder/knowledge/react-components.md",
+          "created_at": "2026-03-19T00:00:00.000Z",
+          "updated_at": "2026-03-19T00:00:00.000Z",
+          "preview": "组件是 React 应用的基本构建块。它们是可复用的 UI 片段。"
+        }
+      ]
+    },
+    {
+      "id": "district-creative-reactor",
+      "name": "创意反应堆区",
+      "description": "想象力与文字的能量反应堆，这里持续产生着故事灵感和写作智慧的能量波",
+      "color": "#8B5CF6",
+      "buildings": [
+        {
+          "id": "building-writing-refinery",
+          "name": "叙事精炼厂",
+          "style": "精密工业未来风",
+          "description": "一座将粗糙文字打磨成精炼叙事的精密工厂，传送带运送着字句，熔炉燃烧着冗余",
+          "file_path": ".claude/skills/kc-builder/knowledge/writing-tips.md",
+          "created_at": "2026-03-19T00:00:00.000Z",
+          "updated_at": "2026-03-19T00:00:00.000Z",
+          "preview": "好的写作应该简洁有力。删除不必要的词语。始终考虑你的读者是谁。"
+        },
+        {
+          "id": "building-idea-generator",
+          "name": "想象发生器",
+          "style": "神秘科技装置",
+          "description": "一个不断发出奇异光芒的球形装置，内部时不时迸发出故事灵感的火花，每道光芒都是一个可能的世界",
+          "file_path": ".claude/skills/kc-builder/knowledge/story-ideas.md",
+          "created_at": "2026-03-19T00:00:00.000Z",
+          "updated_at": "2026-03-19T00:00:00.000Z",
+          "preview": "时间旅行者的书店、最后的图书馆、会说话的猫..."
+        }
+      ]
+    }
+  ],
+  "timeline": [
+    {
+      "date": "2026-03-19",
+      "event": "Agent 城邦建立",
+      "building_id": null
+    },
+    {
+      "date": "2026-03-19",
+      "event": "蟒蛇数据核心上线",
+      "building_id": "building-python-core"
+    },
+    {
+      "date": "2026-03-19",
+      "event": "组件合成塔落成",
+      "building_id": "building-react-tower"
+    },
+    {
+      "date": "2026-03-19",
+      "event": "叙事精炼厂启动",
+      "building_id": "building-writing-refinery"
+    },
+    {
+      "date": "2026-03-19",
+      "event": "想象发生器激活",
+      "building_id": "building-idea-generator"
+    }
+  ]
+}

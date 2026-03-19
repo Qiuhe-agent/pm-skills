@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent - 知识城邦</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0d0d1f 100%);
+        }
+
+        .font-scifi {
+            font-family: 'Orbitron', monospace;
+        }
+
+        .glow-blue {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5), 0 0 40px rgba(59, 130, 246, 0.3);
+        }
+
+        .glow-purple {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5), 0 0 40px rgba(139, 92, 246, 0.3);
+        }
+
+        .grid-bg {
+            background-image:
+                linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .building {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .building:hover {
+            transform: scale(1.1);
+            filter: brightness(1.3);
+        }
+
+        .energy-flow {
+            animation: flow 2s linear infinite;
+        }
+
+        @keyframes flow {
+            0% { stroke-dashoffset: 100; }
+            100% { stroke-dashoffset: 0; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .scanline {
+            background: linear-gradient(
+                transparent 50%,
+                rgba(59, 130, 246, 0.05) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+
+        .neon-text {
+            text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen relative overflow-x-hidden">
+    <!-- 扫描线效果 -->
+    <div class="fixed inset-0 scanline z-50 pointer-events-none"></div>
+
+    <!-- 顶部导航 -->
+    <nav class="glass border-b border-blue-500/30 p-4 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <h1 class="font-scifi text-2xl font-bold text-blue-400 neon-text">AGENT</h1>
+            <div class="flex gap-2">
+                <button onclick="showView('map')" id="btn-map" class="px-4 py-2 rounded bg-blue-600/80 hover:bg-blue-500 transition font-scifi text-sm">地图</button>
+                <button onclick="showView('timeline')" id="btn-timeline" class="px-4 py-2 rounded bg-slate-700/80 hover:bg-slate-600 transition font-scifi text-sm">时间线</button>
+                <button onclick="showView('list')" id="btn-list" class="px-4 py-2 rounded bg-slate-700/80 hover:bg-slate-600 transition font-scifi text-sm">列表</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主标题 -->
+    <header class="text-center py-8 relative">
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-10 left-1/4 w-2 h-2 bg-blue-500 rounded-full pulse"></div>
+            <div class="absolute top-20 right-1/3 w-3 h-3 bg-purple-500 rounded-full pulse" style="animation-delay: 0.5s;"></div>
+            <div class="absolute bottom-10 left-1/3 w-2 h-2 bg-cyan-500 rounded-full pulse" style="animation-delay: 1s;"></div>
+        </div>
+        <h2 class="font-scifi text-5xl font-black mb-2 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">知识城邦</h2>
+        <p class="text-slate-400 font-scifi">建于 2026.03.19 · 科幻未来风格</p>
+    </header>
+
+    <!-- 地图视图 -->
+    <div id="map-view" class="view max-w-6xl mx-auto p-4">
+        <div class="glass rounded-2xl p-8 grid-bg relative overflow-hidden">
+            <svg viewBox="0 0 800 500" class="w-full h-auto">
+                <!-- 背景光晕 -->
+                <defs>
+                    <radialGradient id="glow-blue" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color:rgba(59,130,246,0.3)"/>
+                        <stop offset="100%" style="stop-color:rgba(59,130,246,0)"/>
+                    </radialGradient>
+                    <radialGradient id="glow-purple" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color:rgba(139,92,246,0.3)"/>
+                        <stop offset="100%" style="stop-color:rgba(139,92,246,0)"/>
+                    </radialGradient>
+                    <linearGradient id="energy-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#3B82F6"/>
+                        <stop offset="50%" style="stop-color:#8B5CF6"/>
+                        <stop offset="100%" style="stop-color:#3B82F6"/>
+                    </linearGradient>
+                </defs>
+
+                <!-- 区域光晕 -->
+                <ellipse cx="200" cy="250" rx="180" ry="150" fill="url(#glow-blue)"/>
+                <ellipse cx="600" cy="250" rx="180" ry="150" fill="url(#glow-purple)"/>
+
+                <!-- 能量连接线 -->
+                <path d="M 300 250 Q 400 200 500 250" stroke="url(#energy-gradient)" stroke-width="3" fill="none" stroke-dasharray="10,5" class="energy-flow"/>
+
+                <!-- 区域标签 -->
+                <text x="200" y="80" fill="#3B82F6" font-family="Orbitron" font-size="18" text-anchor="middle" class="neon-text">代码枢纽区</text>
+                <text x="600" y="80" fill="#8B5CF6" font-family="Orbitron" font-size="18" text-anchor="middle" class="neon-text">创意反应堆区</text>
+
+                <!-- 建筑 1: 蟒蛇数据核心 -->
+                <g class="building float" onclick="showBuilding('building-python-core')">
+                    <ellipse cx="120" cy="250" rx="60" ry="60" fill="none" stroke="#3B82F6" stroke-width="2" opacity="0.5"/>
+                    <ellipse cx="120" cy="250" rx="45" ry="45" fill="rgba(59,130,246,0.2)" stroke="#3B82F6" stroke-width="3"/>
+                    <ellipse cx="120" cy="250" rx="25" ry="25" fill="rgba(59,130,246,0.4)"/>
+                    <circle cx="120" cy="250" r="10" fill="#60A5FA" class="pulse"/>
+                    <text x="120" y="330" fill="#60A5FA" font-size="12" text-anchor="middle" font-family="Orbitron">蟒蛇数据核心</text>
+                </g>
+
+                <!-- 建筑 2: 组件合成塔 -->
+                <g class="building float" onclick="showBuilding('building-react-tower')" style="animation-delay: 0.5s;">
+                    <rect x="220" y="180" width="60" height="140" fill="rgba(59,130,246,0.2)" stroke="#3B82F6" stroke-width="2"/>
+                    <rect x="230" y="190" width="40" height="30" fill="rgba(59,130,246,0.4)" stroke="#3B82F6" stroke-width="1"/>
+                    <rect x="230" y="230" width="40" height="30" fill="rgba(96,165,250,0.4)" stroke="#60A5FA" stroke-width="1"/>
+                    <rect x="230" y="270" width="40" height="30" fill="rgba(59,130,246,0.4)" stroke="#3B82F6" stroke-width="1"/>
+                    <polygon points="250,160 220,180 280,180" fill="#3B82F6"/>
+                    <text x="250" y="330" fill="#60A5FA" font-size="12" text-anchor="middle" font-family="Orbitron">组件合成塔</text>
+                </g>
+
+                <!-- 建筑 3: 叙事精炼厂 -->
+                <g class="building float" onclick="showBuilding('building-writing-refinery')" style="animation-delay: 1s;">
+                    <rect x="520" y="200" width="80" height="100" fill="rgba(139,92,246,0.2)" stroke="#8B5CF6" stroke-width="2"/>
+                    <rect x="510" y="180" width="25" height="50" fill="rgba(139,92,246,0.3)" stroke="#8B5CF6" stroke-width="2"/>
+                    <rect x="585" y="190" width="25" height="40" fill="rgba(167,139,250,0.3)" stroke="#A78BFA" stroke-width="2"/>
+                    <circle cx="522" cy="170" r="12" fill="none" stroke="#A78BFA" stroke-width="2" class="pulse"/>
+                    <circle cx="597" cy="180" r="10" fill="none" stroke="#8B5CF6" stroke-width="2" class="pulse" style="animation-delay: 0.5s;"/>
+                    <text x="560" y="330" fill="#A78BFA" font-size="12" text-anchor="middle" font-family="Orbitron">叙事精炼厂</text>
+                </g>
+
+                <!-- 建筑 4: 想象发生器 -->
+                <g class="building float" onclick="showBuilding('building-idea-generator')" style="animation-delay: 1.5s;">
+                    <polygon points="680,170 710,200 710,250 680,280 650,250 650,200" fill="rgba(139,92,246,0.3)" stroke="#8B5CF6" stroke-width="3"/>
+                    <polygon points="680,195 695,210 695,240 680,255 665,240 665,210" fill="rgba(167,139,250,0.5)" stroke="#A78BFA" stroke-width="2"/>
+                    <circle cx="680" cy="225" r="12" fill="#C4B5FD" class="pulse"/>
+                    <line x1="630" y1="200" x2="645" y2="210" stroke="#C4B5FD" stroke-width="2" opacity="0.7"/>
+                    <line x1="715" y1="195" x2="730" y2="185" stroke="#C4B5FD" stroke-width="2" opacity="0.7"/>
+                    <line x1="630" y1="250" x2="645" y2="240" stroke="#C4B5FD" stroke-width="2" opacity="0.7"/>
+                    <line x1="715" y1="255" x2="730" y2="265" stroke="#C4B5FD" stroke-width="2" opacity="0.7"/>
+                    <text x="680" y="330" fill="#A78BFA" font-size="12" text-anchor="middle" font-family="Orbitron">想象发生器</text>
+                </g>
+            </svg>
+            <p class="text-center text-slate-400 mt-4 font-scifi text-sm">点击建筑查看详情</p>
+        </div>
+    </div>
+
+    <!-- 时间线视图 -->
+    <div id="timeline-view" class="view max-w-4xl mx-auto p-4 hidden">
+        <div class="glass rounded-2xl p-8">
+            <h3 class="font-scifi text-2xl text-center mb-8 text-purple-400 neon-text">城邦历史</h3>
+            <div class="relative border-l-2 border-purple-500/50 ml-4">
+                <div class="timeline-item relative pl-8 pb-8">
+                    <span class="font-scifi text-blue-400">2026.03.19</span>
+                    <h4 class="text-xl font-bold mt-1">Agent 城邦建立</h4>
+                    <p class="text-slate-400 mt-2">在知识宇宙中，一座崭新的城邦诞生了。</p>
+                </div>
+                <div class="timeline-item relative pl-8 pb-8">
+                    <span class="font-scifi text-blue-400">2026.03.19</span>
+                    <h4 class="text-xl font-bold mt-1">蟒蛇数据核心上线</h4>
+                    <p class="text-slate-400 mt-2">Python 基础知识能量核心开始运转。</p>
+                </div>
+                <div class="timeline-item relative pl-8 pb-8">
+                    <span class="font-scifi text-blue-400">2026.03.19</span>
+                    <h4 class="text-xl font-bold mt-1">组件合成塔落成</h4>
+                    <p class="text-slate-400 mt-2">React 组件知识高塔组装完成。</p>
+                </div>
+                <div class="timeline-item relative pl-8 pb-8">
+                    <span class="font-scifi text-purple-400">2026.03.19</span>
+                    <h4 class="text-xl font-bold mt-1">叙事精炼厂启动</h4>
+                    <p class="text-slate-400 mt-2">写作技巧精炼设施开始运作。</p>
+                </div>
+                <div class="timeline-item relative pl-8">
+                    <span class="font-scifi text-purple-400">2026.03.19</span>
+                    <h4 class="text-xl font-bold mt-1">想象发生器激活</h4>
+                    <p class="text-slate-400 mt-2">故事灵感生成装置正式上线。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 列表视图 -->
+    <div id="list-view" class="view max-w-4xl mx-auto p-4 hidden">
+        <div class="glass rounded-2xl p-8">
+            <h3 class="font-scifi text-2xl text-center mb-8 text-cyan-400 neon-text">建筑索引</h3>
+
+            <div class="mb-8">
+                <h4 class="font-scifi text-xl text-blue-400 mb-4 flex items-center gap-2">
+                    <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+                    代码枢纽区
+                </h4>
+                <div class="grid gap-4">
+                    <div onclick="showBuilding('building-python-core')" class="building glass rounded-xl p-4 border border-blue-500/30 hover:border-blue-500">
+                        <h5 class="font-bold text-lg text-blue-300">🔮 蟒蛇数据核心</h5>
+                        <p class="text-slate-400 text-sm mt-1">存储 Python 基础知识的能量核心</p>
+                    </div>
+                    <div onclick="showBuilding('building-react-tower')" class="building glass rounded-xl p-4 border border-blue-500/30 hover:border-blue-500">
+                        <h5 class="font-bold text-lg text-blue-300">🏗️ 组件合成塔</h5>
+                        <p class="text-slate-400 text-sm mt-1">组装 React 组件的高科技塔</p>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="font-scifi text-xl text-purple-400 mb-4 flex items-center gap-2">
+                    <span class="w-3 h-3 bg-purple-500 rounded-full"></span>
+                    创意反应堆区
+                </h4>
+                <div class="grid gap-4">
+                    <div onclick="showBuilding('building-writing-refinery')" class="building glass rounded-xl p-4 border border-purple-500/30 hover:border-purple-500">
+                        <h5 class="font-bold text-lg text-purple-300">⚙️ 叙事精炼厂</h5>
+                        <p class="text-slate-400 text-sm mt-1">打磨写作技巧的精密工厂</p>
+                    </div>
+                    <div onclick="showBuilding('building-idea-generator')" class="building glass rounded-xl p-4 border border-purple-500/30 hover:border-purple-500">
+                        <h5 class="font-bold text-lg text-purple-300">💡 想象发生器</h5>
+                        <p class="text-slate-400 text-sm mt-1">诞生故事灵感的神秘装置</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 建筑详情弹窗 -->
+    <div id="building-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4" onclick="closeModal(event)">
+        <div class="glass rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto border border-blue-500/50 glow-blue" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-start mb-4">
+                <h3 id="modal-title" class="font-scifi text-2xl text-blue-400"></h3>
+                <button onclick="hideBuilding()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <p id="modal-style" class="text-slate-500 text-sm mb-2"></p>
+            <p id="modal-description" class="text-slate-300 mb-4"></p>
+            <div class="border-t border-slate-600 pt-4">
+                <h4 class="font-scifi text-sm text-cyan-400 mb-2">知识预览</h4>
+                <div id="modal-preview" class="text-slate-400 text-sm bg-slate-900/50 rounded-lg p-4 whitespace-pre-wrap"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cityData = {
+            version: "1.0",
+            city_name: "Agent",
+            theme: "科幻未来",
+            buildings: {
+                "building-python-core": {
+                    name: "蟒蛇数据核心",
+                    style: "赛博朋克能量核心",
+                    description: "一个悬浮的球形能量核心，内部流动着 Python 字节码，存储着 Python 语言的基础知识",
+                    preview: "Python 基础\n\n## 变量和数据类型\n\nPython 是动态类型语言，不需要声明变量类型。\n\nname = \"Alice\"\nage = 25\nis_student = True\n\n## 列表\n\n列表是有序的可变序列：\n\nfruits = [\"apple\", \"banana\", \"cherry\"]\nfruits.append(\"date\")\n\n## 函数\n\n使用 def 关键字定义函数：\n\ndef greet(name):\n    return f\"Hello, {name}!\""
+                },
+                "building-react-tower": {
+                    name: "组件合成塔",
+                    style: "模块化未来建筑",
+                    description: "由无数可互换组件构成的高塔，每个组件都能独立运行又能无缝组合，代表着 React 的组件化思想",
+                    preview: "React 组件\n\n## 什么是组件？\n\n组件是 React 应用的基本构建块。它们是可复用的 UI 片段。\n\n## 函数组件\n\nfunction Welcome({ name }) {\n  return <h1>Hello, {name}</h1>;\n}\n\n## useState Hook\n\n用于在函数组件中添加状态：\n\nimport { useState } from 'react';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  return (\n    <button onClick={() => setCount(count + 1)}>\n      Count: {count}\n    </button>\n  );\n}"
+                },
+                "building-writing-refinery": {
+                    name: "叙事精炼厂",
+                    style: "精密工业未来风",
+                    description: "一座将粗糙文字打磨成精炼叙事的精密工厂，传送带运送着字句，熔炉燃烧着冗余",
+                    preview: "写作技巧\n\n## 简洁是美德\n\n好的写作应该简洁有力。删除不必要的词语。\n\n- 用\"每天\"代替\"在每天的基础上\"\n- 用\"因为\"代替\"由于这个原因\"\n\n## 读者意识\n\n始终考虑你的读者是谁。他们需要知道什么？\n\n## 结构重要\n\n1. 引言 - 吸引注意力\n2. 主体 - 提供内容\n3. 结论 - 总结要点"
+                },
+                "building-idea-generator": {
+                    name: "想象发生器",
+                    style: "神秘科技装置",
+                    description: "一个不断发出奇异光芒的球形装置，内部时不时迸发出故事灵感的火花，每道光芒都是一个可能的世界",
+                    preview: "故事灵感\n\n## 时间旅行者的书店\n\n主角经营一家神秘书店，每本书都能把读者送到书中的世界。\n\n## 最后的图书馆\n\n在未来世界，所有书籍都被禁止。一群人秘密保存着人类最后的知识。\n\n## 会说话的猫\n\n一只猫能说话，但只有在没人的时候才开口。它知道所有邻居的秘密。"
+                }
+            }
+        };
+
+        function showView(view) {
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.getElementById(view + '-view').classList.remove('hidden');
+
+            document.querySelectorAll('nav button').forEach(btn => {
+                btn.classList.remove('bg-blue-600/80');
+                btn.classList.add('bg-slate-700/80');
+            });
+            document.getElementById('btn-' + view).classList.remove('bg-slate-700/80');
+            document.getElementById('btn-' + view).classList.add('bg-blue-600/80');
+        }
+
+        function showBuilding(buildingId) {
+            const building = cityData.buildings[buildingId];
+            if (!building) return;
+
+            document.getElementById('modal-title').textContent = building.name;
+            document.getElementById('modal-style').textContent = '风格: ' + building.style;
+            document.getElementById('modal-description').textContent = building.description;
+            document.getElementById('modal-preview').textContent = building.preview;
+
+            const modal = document.getElementById('building-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function hideBuilding() {
+            const modal = document.getElementById('building-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function closeModal(event) {
+            if (event.target.id === 'building-modal') {
+                hideBuilding();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideBuilding();
+            }
+        });
+    </script>
+</body>
+</html>
