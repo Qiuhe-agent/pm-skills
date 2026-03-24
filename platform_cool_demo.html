@@ -1,0 +1,1256 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一站式稳定性平台 - 灵动版</title>
+    <!-- 引入 ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        /* 
+         * 全局样式与动效定义
+         * 采用深色科技风 + 磨砂玻璃质感 
+         */
+        /* 暗黑主题（默认） */
+        :root, [data-theme="dark"] {
+            --bg-dark: #0f172a;
+            --bg-radial-inner: #1e293b;
+            --bg-radial-outer: #0f172a;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --primary-glow: #38bdf8;
+            --text-main: #f1f5f9;
+            --text-dim: #94a3b8;
+            --card-hover: rgba(56, 189, 248, 0.15);
+            --panel-bg: rgba(15, 23, 42, 0.7);
+            --panel-shadow: rgba(0, 0, 0, 0.3);
+            --loader-bg: #0f172a;
+            --brand-color: #fff;
+            --brand-tag-bg: rgba(0, 0, 0, 0.3);
+            --hint-color: rgba(255, 255, 255, 0.4);
+            --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+            --item-title-color: #fff;
+            --item-sub-color: #64748b;
+            --item-arrow-color: #666;
+            --close-hover-color: #fff;
+            --label-color: #fff;
+            --sub-label-color: #ccc;
+            --spinner-border: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 极简白主题 */
+        [data-theme="light"] {
+            --bg-dark: #f8fafc;
+            --bg-radial-inner: #f1f5f9;
+            --bg-radial-outer: #e2e8f0;
+            --glass-bg: rgba(0, 0, 0, 0.03);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --primary-glow: #2563eb;
+            --text-main: #1e293b;
+            --text-dim: #64748b;
+            --card-hover: rgba(37, 99, 235, 0.08);
+            --panel-bg: rgba(255, 255, 255, 0.85);
+            --panel-shadow: rgba(0, 0, 0, 0.08);
+            --loader-bg: #f8fafc;
+            --brand-color: #1e293b;
+            --brand-tag-bg: rgba(0, 0, 0, 0.05);
+            --hint-color: rgba(0, 0, 0, 0.35);
+            --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+            --item-title-color: #1e293b;
+            --item-sub-color: #94a3b8;
+            --item-arrow-color: #cbd5e1;
+            --close-hover-color: #1e293b;
+            --label-color: #334155;
+            --sub-label-color: #64748b;
+            --spinner-border: rgba(0, 0, 0, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            overflow: hidden; /* 防止滚动，全屏应用体验 */
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+        }
+
+        /* 全局过渡动画 */
+        body, .background-fx, .detail-panel, .brand h1, .brand p, .hint,
+        .loader, .feature-item, .item-title, .item-sub, .close-btn {
+            transition: background 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        /* 动态背景 - 模拟星空或微光 */
+        .background-fx {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, var(--bg-radial-inner) 0%, var(--bg-radial-outer) 70%);
+            z-index: -1;
+        }
+        
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+            transition: opacity 0.5s ease;
+        }
+        [data-theme="light"] .orb { opacity: 0.15; }
+        .orb-1 { width: 400px; height: 400px; background: #3b82f6; top: -100px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 300px; height: 300px; background: #8b5cf6; bottom: -50px; right: -50px; animation-delay: -5s; }
+        .orb-3 { width: 200px; height: 200px; background: #06b6d4; top: 40%; left: 60%; animation-delay: -10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, -50px); }
+        }
+
+        /* 主容器 */
+        #app-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* 左侧：知识图谱区域 */
+        .graph-area {
+            flex: 1;
+            height: 100%;
+            position: relative;
+        }
+
+        #graph-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 右侧/悬浮：详情面板 - 磨砂玻璃效果 */
+        .detail-panel {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 380px;
+            height: 100%;
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid var(--glass-border);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%); /* 默认隐藏 */
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.5s ease;
+            z-index: 100;
+            box-shadow: -10px 0 30px var(--panel-shadow);
+        }
+
+        .detail-panel.active {
+            transform: translateX(0);
+        }
+
+        .panel-header {
+            margin-bottom: 30px;
+        }
+
+        .panel-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--brand-color), var(--text-dim));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .panel-desc {
+            color: var(--text-dim);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* 极简列表项 */
+        .feature-list {
+            flex: 1;
+            overflow-y: auto;
+            position: relative; /* 用于fade mask */
+        }
+        
+        .feature-list::-webkit-scrollbar { width: 4px; }
+        .feature-list::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-item:hover {
+            background: var(--card-hover);
+            border-color: var(--primary-glow);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px var(--panel-shadow);
+        }
+
+        .feature-item::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; bottom: 0;
+            width: 3px;
+            background: var(--primary-glow);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-item:hover::before {
+            opacity: 1;
+        }
+
+        .item-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--primary-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .item-content {
+            flex: 1;
+        }
+
+        .item-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--item-title-color);
+            margin-bottom: 4px;
+        }
+
+        .item-sub {
+            font-size: 12px;
+            color: var(--item-sub-color);
+        }
+
+        /* 关闭按钮 */
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            color: var(--text-dim);
+            font-size: 24px;
+            transition: 0.3s;
+            z-index: 10;
+        }
+        .close-btn:hover { color: var(--close-hover-color); transform: rotate(90deg); }
+
+        /* 左上角品牌 */
+        .brand {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            z-index: 50;
+            pointer-events: none; /* 让鼠标穿透到图表 */
+        }
+        .brand h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--brand-color);
+            text-shadow: 0 2px 10px var(--panel-shadow);
+        }
+        .brand p {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 5px;
+            background: var(--brand-tag-bg);
+            padding: 4px 8px;
+            border-radius: 4px;
+            backdrop-filter: blur(4px);
+            display: inline-block;
+        }
+
+        /* 操作提示 */
+        .hint {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            color: var(--hint-color);
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        /* 加载动画 */
+        .loader {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: var(--loader-bg);
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s;
+        }
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid var(--spinner-border);
+            border-top-color: var(--primary-glow);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ========== 主题切换按钮 ========== */
+        .theme-toggle {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .theme-toggle-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+            transition: color 0.5s ease;
+        }
+
+        .toggle-track {
+            width: 52px;
+            height: 28px;
+            border-radius: 14px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+        }
+
+        .toggle-track::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(139, 92, 246, 0.2));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .theme-toggle:hover .toggle-track::before {
+            opacity: 1;
+        }
+
+        .toggle-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-glow);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        [data-theme="light"] .toggle-thumb {
+            left: 27px;
+            background: #f59e0b;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+        }
+
+        /* 图标 */
+        .toggle-thumb .icon-moon,
+        .toggle-thumb .icon-sun {
+            position: absolute;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-thumb .icon-moon {
+            opacity: 1;
+            transform: rotate(0deg);
+        }
+
+        .toggle-thumb .icon-sun {
+            opacity: 0;
+            transform: rotate(-90deg);
+        }
+
+        [data-theme="light"] .toggle-thumb .icon-moon {
+            opacity: 0;
+            transform: rotate(90deg);
+        }
+
+        [data-theme="light"] .toggle-thumb .icon-sun {
+            opacity: 1;
+            transform: rotate(0deg);
+        }
+
+        /* ========== 离散度切换按钮 ========== */
+        .dispersion-toggle {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dispersion-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            transition: color 0.5s ease;
+        }
+
+        .dispersion-dots {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .dispersion-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        .dispersion-dot:hover {
+            border-color: var(--primary-glow);
+            background: var(--card-hover);
+            transform: translateY(-2px);
+        }
+
+        .dispersion-dot.active {
+            border-color: var(--primary-glow);
+            background: var(--card-hover);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+        }
+
+        .dispersion-dot svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .dispersion-dot circle {
+            fill: var(--text-dim);
+            transition: fill 0.3s ease;
+        }
+
+        .dispersion-dot.active circle {
+            fill: var(--primary-glow);
+        }
+
+        .dispersion-dot:hover circle {
+            fill: var(--primary-glow);
+        }
+
+        .dispersion-dot-tip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            color: var(--text-main);
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.2s ease;
+            border: 1px solid var(--glass-border);
+        }
+
+        .dispersion-dot:hover .dispersion-dot-tip {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+    </style>
+</head>
+<body data-theme="light">
+
+    <!-- 主题切换按钮 -->
+    <div class="theme-toggle" id="theme-toggle" title="切换主题">
+        <span class="theme-toggle-label" id="theme-label">Light</span>
+        <div class="toggle-track">
+            <div class="toggle-thumb">
+                <span class="icon-moon">🌙</span>
+                <span class="icon-sun">☀️</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 动态背景光晕 -->
+    <div class="background-fx">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- 加载层 -->
+    <div class="loader" id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- 品牌标识 -->
+    <div class="brand">
+        <h1>一站式稳定性平台</h1>
+        <p>Stable Platform Visualization</p>
+    </div>
+
+    <div class="hint">● 拖拽与缩放 ● 点击节点查看详情 ● 右下角调节离散度</div>
+
+    <!-- 离散度切换 -->
+    <div class="dispersion-toggle" id="dispersion-toggle">
+        <span class="dispersion-label">离散度</span>
+        <div class="dispersion-dots">
+            <!-- 紧凑 -->
+            <div class="dispersion-dot" data-level="0" title="紧凑">
+                <span class="dispersion-dot-tip">紧凑</span>
+                <svg viewBox="0 0 16 16">
+                    <circle cx="6" cy="6" r="2.2"/><circle cx="10" cy="6" r="2.2"/><circle cx="8" cy="10" r="2.2"/>
+                </svg>
+            </div>
+            <!-- 适中 -->
+            <div class="dispersion-dot active" data-level="1" title="适中">
+                <span class="dispersion-dot-tip">适中</span>
+                <svg viewBox="0 0 16 16">
+                    <circle cx="4" cy="4" r="2"/><circle cx="12" cy="4" r="2"/><circle cx="8" cy="12" r="2"/>
+                </svg>
+            </div>
+            <!-- 分散 -->
+            <div class="dispersion-dot" data-level="2" title="分散">
+                <span class="dispersion-dot-tip">分散</span>
+                <svg viewBox="0 0 16 16">
+                    <circle cx="2" cy="2" r="1.8"/><circle cx="14" cy="2" r="1.8"/><circle cx="8" cy="14" r="1.8"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container">
+        <!-- 核心图谱区域 -->
+        <div class="graph-area">
+            <div id="graph-container"></div>
+        </div>
+
+        <!-- 右侧详情面板 -->
+        <div class="detail-panel" id="detail-panel">
+            <div class="close-btn" id="close-panel">&times;</div>
+            <div class="panel-header">
+                <div class="panel-title" id="panel-title">模块名称</div>
+                <div class="panel-desc" id="panel-desc">模块描述信息...</div>
+            </div>
+            <div class="feature-list" id="feature-list">
+                <!-- 动态生成列表项 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据配置中心 - 易于迭代
+        const platformData = {
+            "root": { "name": "一站式稳定性平台", "symbolSize": 100, "category": 0 },
+            "categories": [
+                { "name": "平台核心" },
+                { "name": "稳定性洞察", "desc": "全方位监控与指标评分体系，让稳定性看得见、可量化。" },
+                { "name": "场景应急", "desc": "覆盖全链路的应急响应工具，快速定位、止损、恢复。" },
+                { "name": "预案管理", "desc": "预案的全生命周期管理，从创建到演练再到评测。" },
+                { "name": "风险治理", "desc": "主动巡检与风险识别，防患于未然。" },
+                { "name": "多活管控", "desc": "强大的异地多活流量调度与容灾能力。" },
+                { "name": "Ai智能体", "desc": "AI 赋能运维，智能分析与辅助决策。" },
+                { "name": "系统管理", "desc": "基础配置与权限管理中心。" }
+            ],
+            // 节点与关系定义：结构化数据转化为图谱数据
+            "modules": [
+                {
+                    "name": "稳定性洞察",
+                    "features": [
+                        { "name": "双20指标", "tags": ["核心"] },
+                        { "name": "指标大盘", "tags": ["监控"] },
+                        { 
+                            "name": "稳定性分大盘", 
+                            "children": ["稳定性分大盘", "稳定性规范", "稳定性周报", "稳定性月报", "稳定性待办"]
+                        }
+                    ]
+                },
+                {
+                    "name": "场景应急",
+                    "features": [
+                        { "name": "流量大盘", "sub": "拓扑图" },
+                        { "name": "告警中枢" },
+                        { "name": "网路大盘" },
+                        { "name": "场景列表" },
+                        { "name": "线上应急" },
+                        { "name": "运维通知" },
+                        { "name": "时间总览" },
+                        { 
+                            "name": "应急工具", 
+                            "children": ["热点sql查询", "代码检索", "网管日志查询", "黑场攻击", "APi与page关联", "灰度版本管理", "CDN清理工具", "客户端截流"]
+                        }
+                    ]
+                },
+                {
+                    "name": "预案管理",
+                    "features": [
+                        { "name": "预案列表" },
+                        { "name": "数据快照" },
+                        { "name": "评测中心" }
+                    ]
+                },
+                {
+                    "name": "风险治理",
+                    "features": [
+                        { 
+                            "name": "架构巡检", 
+                            "children": ["业务线架构分", "应用架构分", "风险治理", "风险治理结果", "处理记录"]
+                        },
+                        { "name": "风险梳理大盘" },
+                        { "name": "应用风险管理" },
+                        { "name": "业务场景管理" },
+                        { "name": "通用资源管理" },
+                        { "name": "风险列表" },
+                        { "name": "风险规则管理" },
+                        { 
+                            "name": "风险专项", 
+                            "children": ["风险专项列表", "四级团队管理"]
+                        }
+                    ]
+                },
+                {
+                    "name": "多活管控",
+                    "features": [
+                        { "name": "全局流量切换" },
+                        { "name": "应用层流量切换" },
+                        { "name": "全局扩容" },
+                        { "name": "双活资源大盘" },
+                        { "name": "双活容灾架构" }
+                    ]
+                },
+                {
+                    "name": "Ai智能体",
+                    "features": [
+                        { "name": "智能洞察" },
+                        { "name": "应急分析" },
+                        { "name": "智能助手" },
+                        { "name": "知识库", "children": ["管理", "召回"] },
+                        { "name": "mcp", "children": ["可观测mcp", "Api mcp", "LinuxCMBToll"] }
+                    ]
+                },
+                {
+                    "name": "系统管理",
+                    "features": [
+                        { "name": "稳定性接口人" },
+                        { "name": "场景维护列表" },
+                        { "name": "应对场景管理" }
+                    ]
+                }
+            ]
+        };
+
+        // 配色方案 - 暗黑主题（霓虹色系）
+        const darkColors = ['#ffffff', '#38bdf8', '#f472b6', '#a78bfa', '#34d399', '#fbbf24', '#f87171', '#94a3b8'];
+        // 配色方案 - 极简白主题（清新饱和色系）
+        const lightColors = ['#1e293b', '#2563eb', '#db2777', '#7c3aed', '#059669', '#d97706', '#dc2626', '#475569'];
+
+        let colors = lightColors;
+        let currentTheme = 'light';
+
+        // 离散度等级配置：紧凑 / 适中 / 分散
+        const dispersionLevels = [
+            { name: '紧凑', repulsion: 200, edgeLength: [50, 120], gravity: 0.35 },
+            { name: '适中', repulsion: 400, edgeLength: [80, 180], gravity: 0.2 },
+            { name: '分散', repulsion: 800, edgeLength: [150, 300], gravity: 0.08 }
+        ];
+        let currentDispersion = 1; // 默认适中
+
+        // 初始化
+        window.addEventListener('load', () => {
+            const chartDom = document.getElementById('graph-container');
+            let myChart = echarts.init(chartDom, currentTheme === 'dark' ? 'dark' : null);
+            const detailPanel = document.getElementById('detail-panel');
+            const closeBtn = document.getElementById('close-panel');
+            
+            // 构建 ECharts Graph 数据
+            const nodes = [];
+            const links = [];
+
+            // 1. 添加根节点
+            function getRootNodeStyle() {
+                if (currentTheme === 'dark') {
+                    return {
+                        color: {
+                            type: 'radial', x: 0.5, y: 0.5, r: 0.5,
+                            colorStops: [{ offset: 0, color: '#4f46e5' }, { offset: 1, color: '#1e1b4b' }]
+                        },
+                        shadowBlur: 50, shadowColor: '#4f46e5'
+                    };
+                } else {
+                    return {
+                        color: {
+                            type: 'radial', x: 0.5, y: 0.5, r: 0.5,
+                            colorStops: [{ offset: 0, color: '#3b82f6' }, { offset: 1, color: '#bfdbfe' }]
+                        },
+                        shadowBlur: 30, shadowColor: 'rgba(59, 130, 246, 0.4)'
+                    };
+                }
+            }
+
+            nodes.push({
+                id: '0',
+                name: platformData.root.name,
+                symbolSize: 100,
+                x: null, y: null,
+                itemStyle: getRootNodeStyle(),
+                label: { fontSize: 16, fontWeight: 'bold' },
+                category: 0
+            });
+
+            // 2. 循环添加一级模块节点
+            platformData.modules.forEach((mod, idx) => {
+                const modId = `m-${idx}`;
+                // 获取分类对应的颜色
+                const color = colors[(idx + 1) % colors.length];
+                
+                nodes.push({
+                    id: modId,
+                    name: mod.name,
+                    symbolSize: 60 + Math.random() * 20, // 随机大小
+                    category: idx + 1,
+                    itemStyle: { 
+                        color: color,
+                        shadowBlur: 20, shadowColor: color
+                    },
+                    moduleId: idx // 绑定数据索引
+                });
+
+                links.push({
+                    source: '0',
+                    target: modId,
+                    lineStyle: { color: 'source', width: 2, curveness: 0.1 }
+                });
+
+                // 3. 将部分重要二级功能作为小卫星节点展示（增加丰富度，但不展示所有以免杂乱）
+                // 仅展示前3个核心功能作为图谱节点，其余在面板查看
+                mod.features.slice(0, 3).forEach((feat, fIdx) => {
+                    const featId = `f-${idx}-${fIdx}`;
+                    nodes.push({
+                        id: featId,
+                        name: feat.name,
+                        symbolSize: 20 + Math.random() * 10,
+                        category: idx + 1, // 同色系
+                        itemStyle: { opacity: 0.8 },
+                        label: { show: true, position: 'right', fontSize: 10, color: currentTheme === 'dark' ? '#ccc' : '#64748b' },
+                        moduleId: idx // 同样指向父模块数据，点击也打开面板
+                    });
+                    
+                    links.push({
+                        source: modId,
+                        target: featId,
+                        lineStyle: { width: 1, opacity: 0.5 }
+                    });
+                });
+            });
+
+            const option = {
+                backgroundColor: 'transparent',
+                tooltip: {
+                    show: false // 使用侧边栏展示，不使用Tooltip
+                },
+                series: [
+                    {
+                        type: 'graph',
+                        layout: 'force',
+                        data: nodes,
+                        links: links,
+                        categories: platformData.categories,
+                        roam: true, // 允许缩放和平移
+                        label: {
+                            show: true,
+                            position: 'right',
+                            formatter: '{b}',
+                            color: currentTheme === 'dark' ? '#fff' : '#334155',
+                            fontSize: 12
+                        },
+                        force: {
+                            repulsion: dispersionLevels[currentDispersion].repulsion,
+                            edgeLength: dispersionLevels[currentDispersion].edgeLength,
+                            gravity: dispersionLevels[currentDispersion].gravity,
+                            layoutAnimation: true
+                        },
+                        zoom: 0.85, // 初始缩放，让图谱能完整显示
+                        scaleLimit: {
+                            min: 0.3,
+                            max: 5
+                        },
+                        lineStyle: {
+                            color: 'source',
+                            curveness: 0.3
+                        },
+                        emphasis: {
+                            focus: 'adjacency',
+                            lineStyle: {
+                                width: 4
+                            }
+                        }
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
+
+            // 记录当前是否处于聚焦状态
+            let isFocused = false;
+            let focusAnimating = false;
+
+            // 点击事件处理
+            myChart.on('click', function (params) {
+                if (params.dataType === 'node') {
+                    const data = params.data;
+                    
+                    // 根节点
+                    if (data.id === '0') {
+                        closePanel();
+                        return;
+                    }
+
+                    // 模块节点或功能节点
+                    if (data.moduleId !== undefined) {
+                        openPanel(data.moduleId, params.dataIndex);
+                    }
+                }
+            });
+
+            // 面板控制函数
+            function openPanel(moduleIndex, clickedNodeDataIndex) {
+                const mod = platformData.modules[moduleIndex];
+                const cat = platformData.categories[moduleIndex + 1];
+                
+                // 设置标题和描述
+                const titleEl = document.getElementById('panel-title');
+                const descEl = document.getElementById('panel-desc');
+                titleEl.textContent = mod.name;
+                const titleGradientStart = currentTheme === 'dark' ? '#fff' : '#1e293b';
+                titleEl.style.backgroundImage = `linear-gradient(to right, ${titleGradientStart}, ${colors[(moduleIndex+1)%colors.length]})`;
+                descEl.textContent = cat.desc || "暂无描述";
+
+                // 生成功能列表
+                const listEl = document.getElementById('feature-list');
+                listEl.innerHTML = ''; // 清空
+
+                mod.features.forEach(feat => {
+                    // 构建子项HTML
+                    let subInfo = '';
+                    if (feat.sub) subInfo = `<span style="opacity:0.6; font-size:12px; margin-left:5px">(${feat.sub})</span>`;
+                    if (feat.children) subInfo = `<div class="item-sub">包含: ${feat.children.join(' · ')}</div>`;
+
+                    const item = document.createElement('div');
+                    item.className = 'feature-item';
+                    item.innerHTML = `
+                        <div class="item-icon" style="color:${colors[(moduleIndex+1)%colors.length]}; background:${colors[(moduleIndex+1)%colors.length]}22">
+                            ${feat.name.charAt(0)}
+                        </div>
+                        <div class="item-content">
+                            <div class="item-title">${feat.name} ${!feat.children ? subInfo : ''}</div>
+                            ${feat.children ? subInfo : ''}
+                        </div>
+                        <div style="color:var(--item-arrow-color); font-size:18px">›</div>
+                    `;
+                    item.onclick = (e) => {
+                        e.stopPropagation();
+                        // 模拟点击进入功能
+                        // alert(`Navigating to: ${feat.name}`); 
+                        // 实际开发中这里会跳转链接
+                        item.style.transform = "scale(0.98)";
+                        setTimeout(() => item.style.transform = "", 150);
+                    };
+                    listEl.appendChild(item);
+                });
+
+                // 添加入场动画
+                const items = listEl.querySelectorAll('.feature-item');
+                items.forEach((item, i) => {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        item.style.transition = 'all 0.4s ease';
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateY(0)';
+                    }, i * 50);
+                });
+
+                detailPanel.classList.add('active');
+
+                // --- 聚焦动画：将点击的气泡放大并居中 ---
+                if (clickedNodeDataIndex !== undefined) {
+                    focusOnNode(clickedNodeDataIndex);
+                }
+            }
+
+            function closePanel() {
+                detailPanel.classList.remove('active');
+                resetFocus();
+            }
+
+            closeBtn.onclick = closePanel;
+            document.addEventListener('click', (e) => {
+                // 点击画布背景关闭面板
+                if (e.target.tagName === 'CANVAS') {
+                    // ECharts canvas click is handled by chart event, this is fallback
+                    // But chart click doesn't bubble easily to document if not configured
+                    // Actually, echarts 'click' event on blank area is cleaner:
+                }
+            });
+
+            myChart.getZr().on('click', function(event) {
+                if (!event.target) { // 点击了空白处
+                    closePanel();
+                }
+            });
+
+            // --- 聚焦动画逻辑（使用 ECharts 原生 roam 控制） ---
+            
+            // 保存初始视图状态，用于复位
+            let initialCenter = null;
+            let initialZoom = null;
+            
+            // 等力导向布局稳定后记录初始状态
+            setTimeout(() => {
+                const seriesModel = myChart.getModel().getSeriesByIndex(0);
+                if (seriesModel) {
+                    const coordSys = seriesModel.coordinateSystem;
+                    if (coordSys) {
+                        initialCenter = coordSys.getCenter ? coordSys.getCenter() : null;
+                        initialZoom = coordSys.getZoom ? coordSys.getZoom() : 0.85;
+                    }
+                }
+            }, 2000);
+
+            function focusOnNode(nodeDataIndex) {
+                if (focusAnimating) return;
+                focusAnimating = true;
+                
+                // 获取节点在图的逻辑坐标系中的位置
+                const seriesModel = myChart.getModel().getSeriesByIndex(0);
+                const data = seriesModel.getData();
+                const layout = data.getItemLayout(nodeDataIndex);
+                if (!layout) { focusAnimating = false; return; }
+
+                const [nodeX, nodeY] = layout;
+
+                // 目标：将节点居中到屏幕可视区域中心（考虑右侧面板380px的偏移）
+                const panelWidth = 380;
+                const chartWidth = chartDom.clientWidth;
+                const chartHeight = chartDom.clientHeight;
+                
+                // 可视中心应该偏左，因为右侧有面板
+                // 计算可视区域中心在图表坐标系中的位置
+                const visibleCenterPixelX = (chartWidth - panelWidth) / 2;
+                const visibleCenterPixelY = chartHeight / 2;
+
+                // 将像素坐标转换为图表数据坐标
+                // ECharts graph 的 convertFromPixel 可以把像素坐标转成数据坐标
+                // 但 graph 类型比较特殊，我们直接用 roam action
+
+                // 目标缩放等级
+                const targetZoom = 2.0;
+                
+                // 使用 ECharts dispatchAction 进行平滑的 roam 动画
+                // 先获取当前 zoom
+                const currentOption = myChart.getOption();
+                const currentZoom = currentOption.series[0].zoom || 0.85;
+                const currentCenter = currentOption.series[0].center;
+
+                // 计算需要的 center 使得节点出现在可视区域中心
+                // graph 的 center 是数据坐标
+                // 由于面板占了右侧 380px，我们需要让 center 偏右一些
+                // 偏移量 = panelWidth / 2 在数据坐标系下的距离
+                const offsetInDataCoord = (panelWidth / 2) / targetZoom;
+                
+                const targetCenterX = nodeX + offsetInDataCoord;
+                const targetCenterY = nodeY;
+
+                // 使用动画过渡
+                const duration = 600;
+                const startTime = Date.now();
+                const startCenterX = currentCenter ? currentCenter[0] : chartWidth / 2;
+                const startCenterY = currentCenter ? currentCenter[1] : chartHeight / 2;
+                const startZoom = currentZoom;
+
+                function easeOutCubic(t) {
+                    return 1 - Math.pow(1 - t, 3);
+                }
+
+                function animateStep() {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = easeOutCubic(progress);
+
+                    const cx = startCenterX + (targetCenterX - startCenterX) * eased;
+                    const cy = startCenterY + (targetCenterY - startCenterY) * eased;
+                    const z = startZoom + (targetZoom - startZoom) * eased;
+
+                    myChart.setOption({
+                        series: [{
+                            center: [cx, cy],
+                            zoom: z
+                        }]
+                    }, { lazyUpdate: false });
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animateStep);
+                    } else {
+                        isFocused = true;
+                        focusAnimating = false;
+                    }
+                }
+
+                animateStep();
+            }
+
+            function resetFocus() {
+                if (!isFocused) return;
+                focusAnimating = true;
+
+                const currentOption = myChart.getOption();
+                const currentZoom = currentOption.series[0].zoom || 2.0;
+                const currentCenter = currentOption.series[0].center;
+
+                const chartWidth = chartDom.clientWidth;
+                const chartHeight = chartDom.clientHeight;
+
+                const targetZoom = 0.85;
+                // 复位到画布中心
+                const targetCenterX = chartWidth / 2;
+                const targetCenterY = chartHeight / 2;
+
+                const duration = 500;
+                const startTime = Date.now();
+                const startCenterX = currentCenter ? currentCenter[0] : chartWidth / 2;
+                const startCenterY = currentCenter ? currentCenter[1] : chartHeight / 2;
+                const startZoom = currentZoom;
+
+                function easeOutCubic(t) {
+                    return 1 - Math.pow(1 - t, 3);
+                }
+
+                function animateStep() {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = easeOutCubic(progress);
+
+                    const cx = startCenterX + (targetCenterX - startCenterX) * eased;
+                    const cy = startCenterY + (targetCenterY - startCenterY) * eased;
+                    const z = startZoom + (targetZoom - startZoom) * eased;
+
+                    myChart.setOption({
+                        series: [{
+                            center: [cx, cy],
+                            zoom: z
+                        }]
+                    }, { lazyUpdate: false });
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animateStep);
+                    } else {
+                        isFocused = false;
+                        focusAnimating = false;
+                    }
+                }
+
+                animateStep();
+            }
+
+            // ========== 主题切换逻辑 ==========
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeLabel = document.getElementById('theme-label');
+
+            function rebuildChart() {
+                // 销毁旧实例
+                myChart.dispose();
+                
+                // 更新配色
+                colors = currentTheme === 'dark' ? darkColors : lightColors;
+
+                // 用新主题初始化（ECharts 内置 'dark' 主题或默认亮色）
+                myChart = echarts.init(chartDom, currentTheme === 'dark' ? 'dark' : null);
+
+                // 重建节点样式
+                nodes.forEach(node => {
+                    if (node.id === '0') {
+                        node.itemStyle = getRootNodeStyle();
+                    } else if (node.moduleId !== undefined) {
+                        const color = colors[(node.category) % colors.length];
+                        // 判断是一级模块节点还是子功能节点
+                        if (node.id.startsWith('m-')) {
+                            node.itemStyle = { color: color, shadowBlur: 20, shadowColor: color };
+                        } else {
+                            node.itemStyle = { opacity: 0.8 };
+                            node.label = { 
+                                show: true, position: 'right', fontSize: 10, 
+                                color: currentTheme === 'dark' ? '#ccc' : '#64748b' 
+                            };
+                        }
+                    }
+                });
+
+                // 重设option
+                const newOption = {
+                    backgroundColor: 'transparent',
+                    tooltip: { show: false },
+                    series: [{
+                        type: 'graph',
+                        layout: 'force',
+                        data: nodes,
+                        links: links,
+                        categories: platformData.categories,
+                        roam: true,
+                        label: {
+                            show: true,
+                            position: 'right',
+                            formatter: '{b}',
+                            color: currentTheme === 'dark' ? '#fff' : '#334155',
+                            fontSize: 12
+                        },
+                        force: {
+                            repulsion: dispersionLevels[currentDispersion].repulsion,
+                            edgeLength: dispersionLevels[currentDispersion].edgeLength,
+                            gravity: dispersionLevels[currentDispersion].gravity,
+                            layoutAnimation: true
+                        },
+                        zoom: 0.85,
+                        scaleLimit: { min: 0.3, max: 5 },
+                        lineStyle: {
+                            color: 'source',
+                            curveness: 0.3
+                        },
+                        emphasis: {
+                            focus: 'adjacency',
+                            lineStyle: { width: 4 }
+                        }
+                    }]
+                };
+
+                myChart.setOption(newOption);
+
+                // 重新绑定事件
+                myChart.on('click', function (params) {
+                    if (params.dataType === 'node') {
+                        const data = params.data;
+                        if (data.id === '0') {
+                            closePanel();
+                            return;
+                        }
+                        if (data.moduleId !== undefined) {
+                            openPanel(data.moduleId, params.dataIndex);
+                        }
+                    }
+                });
+
+                myChart.getZr().on('click', function(event) {
+                    if (!event.target) {
+                        closePanel();
+                    }
+                });
+
+                // 重置聚焦状态
+                isFocused = false;
+                focusAnimating = false;
+            }
+
+            themeToggle.addEventListener('click', () => {
+                currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.body.setAttribute('data-theme', currentTheme);
+                themeLabel.textContent = currentTheme === 'dark' ? 'Dark' : 'Light';
+                
+                // 关闭面板
+                detailPanel.classList.remove('active');
+                
+                // 重建图表
+                rebuildChart();
+            });
+
+            // ========== 离散度切换逻辑 ==========
+            const dispersionDots = document.querySelectorAll('.dispersion-dot');
+
+            dispersionDots.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    const level = parseInt(dot.getAttribute('data-level'));
+                    if (level === currentDispersion) return;
+
+                    currentDispersion = level;
+
+                    // 更新 active 状态
+                    dispersionDots.forEach(d => d.classList.remove('active'));
+                    dot.classList.add('active');
+
+                    // 平滑更新力导向参数（不需要重建图表，直接 setOption 即可触发力导向重新计算）
+                    const dl = dispersionLevels[currentDispersion];
+                    myChart.setOption({
+                        series: [{
+                            force: {
+                                repulsion: dl.repulsion,
+                                edgeLength: dl.edgeLength,
+                                gravity: dl.gravity
+                            }
+                        }]
+                    });
+                });
+            });
+
+            // 移除加载动画
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+                // 让图表适配屏幕
+                myChart.resize();
+            }, 800);
+
+            window.addEventListener('resize', () => myChart.resize());
+        });
+    </script>
+</body>
+</html>
