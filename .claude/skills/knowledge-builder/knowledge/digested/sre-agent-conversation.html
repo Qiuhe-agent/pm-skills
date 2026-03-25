@@ -382,20 +382,27 @@
 
         .answer-content {
             color: #444;
+            line-height: 1.5;
         }
 
         .answer-content p {
-            margin-bottom: 15px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .answer-content p+p {
+            margin-top: 4px;
         }
 
         .answer-content ul,
         .answer-content ol {
             margin-left: 20px;
-            margin-bottom: 15px;
+            margin-top: 4px;
+            margin-bottom: 4px;
         }
 
         .answer-content li {
-            margin-bottom: 8px;
+            margin-bottom: 2px;
         }
 
         .answer-content strong {
@@ -403,9 +410,32 @@
         }
 
         .answer-content h3,
-        .answer-content h4 {
-            margin: 20px 0 10px 0;
+        .answer-content h4,
+        .answer-content h5 {
+            margin: 8px 0 4px 0;
             color: #333;
+        }
+
+        .answer-content h3:first-child,
+        .answer-content h4:first-child,
+        .answer-content h5:first-child {
+            margin-top: 0;
+        }
+
+        .answer-content h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .answer-content h4 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .answer-content h5 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #555;
         }
 
         .answer-content code {
@@ -413,6 +443,40 @@
             padding: 2px 6px;
             border-radius: 4px;
             font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .answer-content pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 4px 0;
+            border: 1px solid #e0e0e0;
+        }
+
+        .answer-content pre code {
+            background: none;
+            padding: 0;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .answer-content hr {
+            border: none;
+            border-top: 1px solid #e0e0e0;
+            margin: 8px 0;
+        }
+
+        .answer-content ul {
+            margin-left: 20px;
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
+
+        .answer-content ul li {
+            margin-bottom: 2px;
+            line-height: 1.4;
         }
 
         .feedback {
@@ -592,13 +656,58 @@
 
         function parseMarkdown(text) {
             if (!text) return '';
-            return text
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/### (.*?)(\n|$)/g, '<h3>$1</h3>')
-                .replace(/## (.*?)(\n|$)/g, '<h4>$1</h4>')
-                .replace(/- (.*?)(\n|$)/g, '<li>$1</li>')
-                .replace(/\n\n/g, '</p><p>')
-                .replace(/\n/g, '<br>');
+
+            let result = text;
+
+            result = result.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+
+            result = result.replace(/^#### (.+)$/gm, '<h5>$1</h5>');
+            result = result.replace(/^### (.+)$/gm, '<h4>$1</h4>');
+            result = result.replace(/^## (.+)$/gm, '<h3>$1</h3>');
+            result = result.replace(/^# (.+)$/gm, '<h2>$1</h2>');
+
+            result = result.replace(/^---$/gm, '<hr>');
+
+            result = result.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+            result = result.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            result = result.replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>');
+
+            result = result.replace(/^- (.+)$/gm, '<li>$1</li>');
+
+            result = result.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, function (match) {
+                return '<ul>' + match + '</ul>';
+            });
+
+            result = result.replace(/\n{3,}/g, '\n\n');
+
+            result = result.replace(/\n\n/g, '</p><p>');
+            result = result.replace(/\n/g, '<br>');
+
+            result = result.replace(/<p><\/p>/g, '');
+            result = result.replace(/<p>(<h[2345]>)/g, '$1');
+            result = result.replace(/(<\/h[2345]>)<\/p>/g, '$1');
+            result = result.replace(/<p>(<ul>)/g, '$1');
+            result = result.replace(/(<\/ul>)<\/p>/g, '$1');
+            result = result.replace(/<p>(<pre>)/g, '$1');
+            result = result.replace(/(<\/pre>)<\/p>/g, '$1');
+            result = result.replace(/<p>(<hr>)/g, '$1');
+            result = result.replace(/(<hr>)<\/p>/g, '$1');
+
+            result = result.replace(/<p><br>/g, '<p>');
+            result = result.replace(/<br><\/p>/g, '</p>');
+            result = result.replace(/(<h[2345]>)<br>/g, '$1');
+            result = result.replace(/<br>(<\/h[2345]>)/g, '$1');
+            result = result.replace(/(<ul>)<br>/g, '$1');
+            result = result.replace(/<br>(<\/ul>)/g, '$1');
+            result = result.replace(/(<hr>)<br>/g, '$1');
+            result = result.replace(/<br>(<hr>)/g, '$1');
+
+            result = result.replace(/^(<br>)+/, '');
+            result = result.replace(/(<br>)+$/, '');
+
+            return result;
         }
 
         function renderHeader(data) {
