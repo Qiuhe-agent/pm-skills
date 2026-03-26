@@ -1,0 +1,254 @@
+[
+  {
+    "subject": "一站式稳定性平台",
+    "predicate": "has",
+    "object": "稳定性洞察",
+    "chunk": 1
+  },
+  {
+    "subject": "一站式稳定性平台",
+    "predicate": "has",
+    "object": "场景应急",
+    "chunk": 1
+  },
+  {
+    "subject": "一站式稳定性平台",
+    "predicate": "has",
+    "object": "预案管理",
+    "chunk": 1
+  },
+  {
+    "subject": "一站式稳定性平台",
+    "predicate": "has",
+    "object": "风险治理",
+    "chunk": 1
+  },
+  {
+    "subject": "一站式稳定性平台",
+    "predicate": "has",
+    "object": "多活管控",
+    "chunk": 1
+  },
+  {
+    "subject": "一站式稳定性平台",
+    "predicate": "has",
+    "object": "ai智能体",
+    "chunk": 1
+  },
+  {
+    "subject": "一站式稳定性平台",
+    "predicate": "has",
+    "object": "系统管理",
+    "chunk": 1
+  },
+  {
+    "subject": "稳定性洞察",
+    "predicate": "includes",
+    "object": "双20指标",
+    "chunk": 1
+  },
+  {
+    "subject": "稳定性洞察",
+    "predicate": "includes",
+    "object": "指标大盘",
+    "chunk": 1
+  },
+  {
+    "subject": "稳定性洞察",
+    "predicate": "includes",
+    "object": "稳定性分大盘",
+    "chunk": 1
+  },
+  {
+    "subject": "稳定性分大盘",
+    "predicate": "includes",
+    "object": "稳定性规范",
+    "chunk": 1
+  },
+  {
+    "subject": "稳定性分大盘",
+    "predicate": "includes",
+    "object": "稳定性周报",
+    "chunk": 1
+  },
+  {
+    "subject": "稳定性分大盘",
+    "predicate": "includes",
+    "object": "稳定性月报",
+    "chunk": 1
+  },
+  {
+    "subject": "稳定性分大盘",
+    "predicate": "includes",
+    "object": "稳定性待办",
+    "chunk": 1
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "流量大盘",
+    "chunk": 1
+  },
+  {
+    "subject": "流量大盘",
+    "predicate": "has",
+    "object": "拓扑图",
+    "chunk": 1
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "告警中枢",
+    "chunk": 1
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "网络大盘",
+    "chunk": 1
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "场景列表",
+    "chunk": 1
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "线上应急",
+    "chunk": 1
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "运维通知",
+    "chunk": 1
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "时间总览",
+    "chunk": 1
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "应急工具",
+    "chunk": 1
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "热点sql查询",
+    "chunk": 1
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "代码检索",
+    "chunk": 1
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "网管日志查询",
+    "chunk": 1
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "黑场攻击",
+    "chunk": 1
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "api和page关联",
+    "chunk": 1
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "灰度版本管理",
+    "chunk": 1
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "cdn清理工具",
+    "chunk": 1
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "客户端截流",
+    "chunk": 1
+  },
+  {
+    "subject": "预案管理",
+    "predicate": "includes",
+    "object": "预案列表",
+    "chunk": 1
+  },
+  {
+    "subject": "预案管理",
+    "predicate": "includes",
+    "object": "数据快照",
+    "chunk": 1
+  },
+  {
+    "subject": "预案管理",
+    "predicate": "includes",
+    "object": "评测中心",
+    "chunk": 1
+  },
+  {
+    "subject": "风险治理",
+    "predicate": "includes",
+    "object": "架构巡检",
+    "chunk": 1
+  },
+  {
+    "subject": "架构巡检",
+    "predicate": "includes",
+    "object": "业务线架构分",
+    "chunk": 1
+  },
+  {
+    "subject": "架构巡检",
+    "predicate": "includes",
+    "object": "应用架构分",
+    "chunk": 1
+  },
+  {
+    "subject": "架构巡检",
+    "predicate": "includes",
+    "object": "风险治理结果",
+    "chunk": 1
+  },
+  {
+    "subject": "架构巡检",
+    "predicate": "includes",
+    "object": "处理记录",
+    "chunk": 1
+  },
+  {
+    "subject": "风险治理",
+    "predicate": "includes",
+    "object": "风险梳理大盘",
+    "chunk": 1
+  },
+  {
+    "subject": "风险治理",
+    "predicate": "includes",
+    "object": "应用风险管理",
+    "chunk": 1
+  },
+  {
+    "subject": "风险治理",
+    "predicate": "includes",
+    "object": "业务场景管理",
+    "chunk": 1
+  }
+]

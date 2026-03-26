@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>知识图谱可视化</title>
+    <script type="text/javascript" src="https://unpkg.com/vis-network@9.1.6/dist/vis-network.min.js"></script>
+    <link href="https://unpkg.com/vis-network@9.1.6/dist/vis-network.min.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        #mynetwork {
+            width: 100%;
+            height: 100vh;
+            border: 1px solid lightgray;
+            background-color: white;
+        }
+        #info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 300px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <strong>使用说明：</strong><br>
+        方式1: 直接修改本文件中的 graphData 变量<br>
+        方式2: 启动本地服务器后，会自动加载同目录下的 <strong>data.json</strong><br>
+        <small>启动服务器: python -m http.server 8000</small>
+    </div>
+    <div id="mynetwork"></div>
+
+    <script type="text/javascript">
+        // ============================================
+        // 方式1: 直接在这里修改数据（如果没有外部data.json时使用）
+        // ============================================
+        const graphData = [
+  {
+    "subject": "一站式稳定性平台",
+    "predicate": "has",
+    "object": "稳定性洞察"
+  },
+  {
+    "subject": "一站式稳定性平台",
+    "predicate": "has",
+    "object": "场景应急"
+  },
+  {
+    "subject": "一站式稳定性平台",
+    "predicate": "has",
+    "object": "预案管理"
+  },
+  {
+    "subject": "一站式稳定性平台",
+    "predicate": "has",
+    "object": "风险治理"
+  },
+  {
+    "subject": "一站式稳定性平台",
+    "predicate": "has",
+    "object": "多活管控"
+  },
+  {
+    "subject": "一站式稳定性平台",
+    "predicate": "has",
+    "object": "ai智能体"
+  },
+  {
+    "subject": "一站式稳定性平台",
+    "predicate": "has",
+    "object": "系统管理"
+  },
+  {
+    "subject": "稳定性洞察",
+    "predicate": "includes",
+    "object": "双20指标"
+  },
+  {
+    "subject": "稳定性洞察",
+    "predicate": "includes",
+    "object": "指标大盘"
+  },
+  {
+    "subject": "稳定性洞察",
+    "predicate": "includes",
+    "object": "稳定性分大盘"
+  },
+  {
+    "subject": "稳定性分大盘",
+    "predicate": "includes",
+    "object": "稳定性规范"
+  },
+  {
+    "subject": "稳定性分大盘",
+    "predicate": "includes",
+    "object": "稳定性周报"
+  },
+  {
+    "subject": "稳定性分大盘",
+    "predicate": "includes",
+    "object": "稳定性月报"
+  },
+  {
+    "subject": "稳定性分大盘",
+    "predicate": "includes",
+    "object": "稳定性待办"
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "流量大盘"
+  },
+  {
+    "subject": "流量大盘",
+    "predicate": "has",
+    "object": "拓扑图"
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "告警中枢"
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "网络大盘"
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "场景列表"
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "线上应急"
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "运维通知"
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "时间总览"
+  },
+  {
+    "subject": "场景应急",
+    "predicate": "includes",
+    "object": "应急工具"
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "热点sql查询"
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "代码检索"
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "网管日志查询"
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "黑场攻击"
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "api和page关联"
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "灰度版本管理"
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "cdn清理工具"
+  },
+  {
+    "subject": "应急工具",
+    "predicate": "includes",
+    "object": "客户端截流"
+  },
+  {
+    "subject": "预案管理",
+    "predicate": "includes",
+    "object": "预案列表"
+  },
+  {
+    "subject": "预案管理",
+    "predicate": "includes",
+    "object": "数据快照"
+  },
+  {
+    "subject": "预案管理",
+    "predicate": "includes",
+    "object": "评测中心"
+  },
+  {
+    "subject": "风险治理",
+    "predicate": "includes",
+    "object": "架构巡检"
+  },
+  {
+    "subject": "架构巡检",
+    "predicate": "includes",
+    "object": "业务线架构分"
+  },
+  {
+    "subject": "架构巡检",
+    "predicate": "includes",
+    "object": "应用架构分"
+  },
+  {
+    "subject": "架构巡检",
+    "predicate": "includes",
+    "object": "风险治理结果"
+  },
+  {
+    "subject": "架构巡检",
+    "predicate": "includes",
+    "object": "处理记录"
+  },
+  {
+    "subject": "风险治理",
+    "predicate": "includes",
+    "object": "风险梳理大盘"
+  },
+  {
+    "subject": "风险治理",
+    "predicate": "includes",
+    "object": "应用风险管理"
+  },
+  {
+    "subject": "风险治理",
+    "predicate": "includes",
+    "object": "业务场景管理"
+  }
+];
+
+        const colorPalette = [
+            '#e41a1c', '#377eb8', '#4daf4a', '#984ea3',
+            '#ff7f00', '#ffff33', '#a65628', '#f781bf',
+            '#a6cee3', '#b2df8a', '#cab2d6', '#fb9a99'
+        ];
+
+        let edges, nodes, network;
+
+        async function init() {
+            let dataToUse = graphData;
+
+            // 尝试加载外部 data.json
+            try {
+                const response = await fetch('data.json');
+                if (response.ok) {
+                    dataToUse = await response.json();
+                    document.getElementById('info').innerHTML = '<strong>✓ 已加载: data.json</strong>';
+                }
+            } catch (e) {
+                // 加载失败时使用内置数据
+                console.log('使用内置数据（无法加载data.json，需启动本地服务器）');
+            }
+
+            let nodeArray, edgeArray;
+
+            if (Array.isArray(dataToUse)) {
+                const result = convertTriplesToGraph(dataToUse);
+                nodeArray = result.nodes;
+                edgeArray = result.edges;
+            } else if (dataToUse.nodes && dataToUse.edges) {
+                nodeArray = dataToUse.nodes;
+                edgeArray = dataToUse.edges;
+            } else {
+                alert('数据格式错误！');
+                return;
+            }
+
+            drawGraph(nodeArray, edgeArray);
+        }
+
+        function convertTriplesToGraph(triples) {
+            const nodeMap = new Map();
+            const edgeList = [];
+            const connectionCount = new Map();
+
+            triples.forEach((triple, index) => {
+                const subject = triple.subject || triple.source || triple.from;
+                const object = triple.object || triple.target || triple.to;
+                const predicate = triple.predicate || triple.relation || triple.label;
+
+                if (subject && object) {
+                    if (!nodeMap.has(subject)) {
+                        nodeMap.set(subject, {id: subject, label: subject});
+                    }
+                    if (!nodeMap.has(object)) {
+                        nodeMap.set(object, {id: object, label: object});
+                    }
+                    connectionCount.set(subject, (connectionCount.get(subject) || 0) + 1);
+                    connectionCount.set(object, (connectionCount.get(object) || 0) + 1);
+                }
+            });
+
+            const communityMap = detectCommunities(triples, nodeMap);
+
+            const nodes = Array.from(nodeMap.values()).map(node => {
+                const connCount = connectionCount.get(node.id) || 1;
+                const community = communityMap.get(node.id) || 0;
+                return {
+                    id: node.id,
+                    label: node.label,
+                    title: `${node.label} - 连接数: ${connCount}`,
+                    size: Math.min(50, Math.max(10, 10 + connCount * 2)),
+                    color: colorPalette[community % colorPalette.length],
+                    shape: "dot"
+                };
+            });
+
+            triples.forEach((triple, index) => {
+                const subject = triple.subject || triple.source || triple.from;
+                const object = triple.object || triple.target || triple.to;
+                const predicate = triple.predicate || triple.relation || triple.label || 'related';
+
+                if (subject && object) {
+                    edgeList.push({
+                        id: index,
+                        from: subject,
+                        to: object,
+                        label: predicate,
+                        title: predicate,
+                        arrows: "to"
+                    });
+                }
+            });
+
+            return {nodes, edges: edgeList};
+        }
+
+        function detectCommunities(triples, nodeMap) {
+            const communityMap = new Map();
+            const adjacency = new Map();
+            let communityId = 0;
+
+            triples.forEach(triple => {
+                const subject = triple.subject || triple.source || triple.from;
+                const object = triple.object || triple.target || triple.to;
+                if (subject && object) {
+                    if (!adjacency.has(subject)) adjacency.set(subject, []);
+                    if (!adjacency.has(object)) adjacency.set(object, []);
+                    adjacency.get(subject).push(object);
+                    adjacency.get(object).push(subject);
+                }
+            });
+
+            const visited = new Set();
+            nodeMap.forEach((_, nodeId) => {
+                if (!visited.has(nodeId)) {
+                    const queue = [nodeId];
+                    visited.add(nodeId);
+                    while (queue.length > 0) {
+                        const current = queue.shift();
+                        communityMap.set(current, communityId);
+                        const neighbors = adjacency.get(current) || [];
+                        neighbors.forEach(n => {
+                            if (!visited.has(n)) {
+                                visited.add(n);
+                                queue.push(n);
+                            }
+                        });
+                    }
+                    communityId++;
+                }
+            });
+
+            return communityMap;
+        }
+
+        function drawGraph(nodeArray, edgeArray) {
+            const container = document.getElementById('mynetwork');
+            nodes = new vis.DataSet(nodeArray);
+            edges = new vis.DataSet(edgeArray);
+            const data = {nodes: nodes, edges: edges};
+
+            const options = {
+                physics: {
+                    enabled: true,
+                    solver: "forceAtlas2Based",
+                    forceAtlas2Based: {
+                        gravitationalConstant: -50,
+                        centralGravity: 0.01,
+                        springLength: 100,
+                        springConstant: 0.08
+                    },
+                    stabilization: {
+                        iterations: 200,
+                        enabled: true
+                    }
+                },
+                edges: {
+                    color: {inherit: true},
+                    font: {size: 11},
+                    smooth: false,
+                    arrows: "to"
+                },
+                nodes: {
+                    font: {size: 14, face: "Tahoma"},
+                    scaling: {min: 10, max: 50},
+                    tooltipDelay: 200,
+                    shape: "dot"
+                },
+                interaction: {
+                    hover: true,
+                    navigationButtons: true,
+                    keyboard: true,
+                    tooltipDelay: 200
+                },
+                layout: {
+                    improvedLayout: true
+                }
+            };
+
+            network = new vis.Network(container, data, options);
+        }
+
+        init();
+    </script>
+</body>
+</html>

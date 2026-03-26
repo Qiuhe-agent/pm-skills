@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>知识图谱可视化</title>
+    <script type="text/javascript" src="https://unpkg.com/vis-network@9.1.6/dist/vis-network.min.js"></script>
+    <link href="https://unpkg.com/vis-network@9.1.6/dist/vis-network.min.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        #mynetwork {
+            width: 100%;
+            height: 100vh;
+            border: 1px solid lightgray;
+            background-color: white;
+        }
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">正在加载 data.json...</div>
+    <div id="mynetwork"></div>
+
+    <script type="text/javascript">
+        const colorPalette = [
+            '#e41a1c', '#377eb8', '#4daf4a', '#984ea3',
+            '#ff7f00', '#ffff33', '#a65628', '#f781bf',
+            '#a6cee3', '#b2df8a', '#cab2d6', '#fb9a99'
+        ];
+
+        let edges, nodes, network;
+
+        async function init() {
+            try {
+                const response = await fetch('data.json');
+                if (!response.ok) {
+                    throw new Error('无法加载 data.json');
+                }
+                const dataToUse = await response.json();
+                document.getElementById('loading').style.display = 'none';
+
+                let nodeArray, edgeArray;
+
+                if (Array.isArray(dataToUse)) {
+                    const result = convertTriplesToGraph(dataToUse);
+                    nodeArray = result.nodes;
+                    edgeArray = result.edges;
+                } else if (dataToUse.nodes && dataToUse.edges) {
+                    nodeArray = dataToUse.nodes;
+                    edgeArray = dataToUse.edges;
+                } else {
+                    alert('数据格式错误！');
+                    return;
+                }
+
+                drawGraph(nodeArray, edgeArray);
+            } catch (e) {
+                document.getElementById('loading').innerHTML =
+                    '加载失败！请确保：<br><br>' +
+                    '1. 同目录下有 data.json 文件<br>' +
+                    '2. 通过本地服务器访问（不能直接打开HTML）<br><br>' +
+                    '启动服务器: python -m http.server 8000<br>' +
+                    '然后访问: http://localhost:8000';
+                console.error(e);
+            }
+        }
+
+        function convertTriplesToGraph(triples) {
+            const nodeMap = new Map();
+            const edgeList = [];
+            const connectionCount = new Map();
+
+            triples.forEach((triple, index) => {
+                const subject = triple.subject || triple.source || triple.from;
+                const object = triple.object || triple.target || triple.to;
+                const predicate = triple.predicate || triple.relation || triple.label;
+
+                if (subject && object) {
+                    if (!nodeMap.has(subject)) {
+                        nodeMap.set(subject, {id: subject, label: subject});
+                    }
+                    if (!nodeMap.has(object)) {
+                        nodeMap.set(object, {id: object, label: object});
+                    }
+                    connectionCount.set(subject, (connectionCount.get(subject) || 0) + 1);
+                    connectionCount.set(object, (connectionCount.get(object) || 0) + 1);
+                }
+            });
+
+            const communityMap = detectCommunities(triples, nodeMap);
+
+            const nodes = Array.from(nodeMap.values()).map(node => {
+                const connCount = connectionCount.get(node.id) || 1;
+                const community = communityMap.get(node.id) || 0;
+                return {
+                    id: node.id,
+                    label: node.label,
+                    title: `${node.label} - 连接数: ${connCount}`,
+                    size: Math.min(50, Math.max(10, 10 + connCount * 2)),
+                    color: colorPalette[community % colorPalette.length],
+                    shape: "dot"
+                };
+            });
+
+            triples.forEach((triple, index) => {
+                const subject = triple.subject || triple.source || triple.from;
+                const object = triple.object || triple.target || triple.to;
+                const predicate = triple.predicate || triple.relation || triple.label || 'related';
+
+                if (subject && object) {
+                    edgeList.push({
+                        id: index,
+                        from: subject,
+                        to: object,
+                        label: predicate,
+                        title: predicate,
+                        arrows: "to"
+                    });
+                }
+            });
+
+            return {nodes, edges: edgeList};
+        }
+
+        function detectCommunities(triples, nodeMap) {
+            const communityMap = new Map();
+            const adjacency = new Map();
+            let communityId = 0;
+
+            triples.forEach(triple => {
+                const subject = triple.subject || triple.source || triple.from;
+                const object = triple.object || triple.target || triple.to;
+                if (subject && object) {
+                    if (!adjacency.has(subject)) adjacency.set(subject, []);
+                    if (!adjacency.has(object)) adjacency.set(object, []);
+                    adjacency.get(subject).push(object);
+                    adjacency.get(object).push(subject);
+                }
+            });
+
+            const visited = new Set();
+            nodeMap.forEach((_, nodeId) => {
+                if (!visited.has(nodeId)) {
+                    const queue = [nodeId];
+                    visited.add(nodeId);
+                    while (queue.length > 0) {
+                        const current = queue.shift();
+                        communityMap.set(current, communityId);
+                        const neighbors = adjacency.get(current) || [];
+                        neighbors.forEach(n => {
+                            if (!visited.has(n)) {
+                                visited.add(n);
+                                queue.push(n);
+                            }
+                        });
+                    }
+                    communityId++;
+                }
+            });
+
+            return communityMap;
+        }
+
+        function drawGraph(nodeArray, edgeArray) {
+            const container = document.getElementById('mynetwork');
+            nodes = new vis.DataSet(nodeArray);
+            edges = new vis.DataSet(edgeArray);
+            const data = {nodes: nodes, edges: edges};
+
+            const options = {
+                physics: {
+                    enabled: true,
+                    solver: "forceAtlas2Based",
+                    forceAtlas2Based: {
+                        gravitationalConstant: -50,
+                        centralGravity: 0.01,
+                        springLength: 100,
+                        springConstant: 0.08
+                    },
+                    stabilization: {
+                        iterations: 200,
+                        enabled: true
+                    }
+                },
+                edges: {
+                    color: {inherit: true},
+                    font: {size: 11},
+                    smooth: false,
+                    arrows: "to"
+                },
+                nodes: {
+                    font: {size: 14, face: "Tahoma"},
+                    scaling: {min: 10, max: 50},
+                    tooltipDelay: 200,
+                    shape: "dot"
+                },
+                interaction: {
+                    hover: true,
+                    navigationButtons: true,
+                    keyboard: true,
+                    tooltipDelay: 200
+                },
+                layout: {
+                    improvedLayout: true
+                }
+            };
+
+            network = new vis.Network(container, data, options);
+        }
+
+        init();
+    </script>
+</body>
+</html>
